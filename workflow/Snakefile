@@ -1,0 +1,71 @@
+configfile: "config/config.yaml" 
+
+rule all: 
+	input:
+		expand("{sample}.merged.vcf", sample=config["samples"])
+
+rule retro:
+	input:
+		sample="{sample}.bam", 
+		ref=expand("{ref_retro}.tab", ref_retro=config["ref_retro"])
+	output:
+		discover="results/{sample}.output.vcf", 
+		call="results/{sample}.final.vcf"
+	container: 
+		"docker://kristinebilgrav/findtroll:latest"
+	shell:
+		"perl retroseq.pl - discover -bam {input.sample} - output {output.discover} -refTEs (input.ref}"
+
+
+rule jitter:
+	input:
+		sample="{sample}.bam", 
+		ref=expand("{ref_jitter}.tab", ref_jitter=config["ref_jitter"])
+	output:
+		"results/{sample}_jitter.vcf"
+	container: 
+		"docker://kristinebilgrav/findtroll:latest"
+	shell:
+		"jitterbug.py {input.sample} {input.ref} -o {ouput}"
+
+rule tiddit:
+	input:
+		sample="{sample}.bam",
+		ref=expand("{ref_tiddit}.tab", ref_tiddit=config["ref_tiddit"])
+	output:
+		"results/{sample}_tiddit.vcf"
+	container: 
+		"docker://kristinebilgrav/findtroll:latest"
+	shell:
+		"python TIDDIT.py --sv --bam {input.sample} --ref {input.ref} -o {output}"
+
+rule mobileann:
+	input:
+		tiddit="results/{sample}_tiddit.vcf", 
+		retro="results/{sample}.final.vcf"
+	output:
+		"results/{sample}_tiddit_retro.vcf"
+	container: 
+		"docker://kristinebilgrav/findtroll:latest"
+	shell:
+		"python MobileAnn.py --sv_annotate --sv {input.tiddit} --db {input.retro} > {output}"
+
+rule svdb_merge:
+	input:
+		retro="results/{sample}.final.vcf",
+		tiddit_retro="results/{sample}_tiddit_retro.vcf",
+		jitter="results/{sample}_jitter.vcf"
+	output:
+		"{sample}.merged.vcf"
+	container: 
+		"docker://kristinebilgrav/findtroll:latest"
+
+	shell:
+		"svdb --merge --vcf {input.retro} {input.tiddit_retro} {input.jitter} > {output}"
+
+
+#rule vep:
+
+#rule annotate:
+
+
