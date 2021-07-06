@@ -1,37 +1,39 @@
+#snakemake -np --use-singularity 
+
 configfile: "config/config.yaml" 
 
 rule all: 
 	input:
-		expand("{sample}.merged.vcf", sample=config["samples"])
+		expand("results/{sample}.merged.vcf", sample=config["samples"])
 
 rule retro:
 	input:
 		sample="{sample}.bam", 
-		ref=expand("{ref_retro}.tab", ref_retro=config["ref_retro"])
+		ref=expand("{ref_retro}", ref_retro=config["ref_retro"]),
+		ref_fasta=expand("{ref_fasta}", ref_fasta=config["ref_fasta"])
 	output:
 		discover="results/{sample}.output.vcf", 
 		call="results/{sample}.final.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		"perl retroseq.pl - discover -bam {input.sample} - output {output.discover} -refTEs (input.ref}"
-
+	script:
+		"bash run_retro.sh {input.sampleinput.sample} {output.discover} {input.ref} {output.discover} {input.ref_fasta} {output.call}"
 
 rule jitter:
 	input:
 		sample="{sample}.bam", 
-		ref=expand("{ref_jitter}.tab", ref_jitter=config["ref_jitter"])
+		ref=expand("{ref_jitter}", ref_jitter=config["ref_jitter"])
 	output:
 		"results/{sample}_jitter.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
-		"jitterbug.py {input.sample} {input.ref} -o {ouput}"
+		"python jitterbug.py {input.sample} {input.ref} -o {output}"
 
 rule tiddit:
 	input:
 		sample="{sample}.bam",
-		ref=expand("{ref_tiddit}.tab", ref_tiddit=config["ref_tiddit"])
+		ref=expand("{ref_tiddit}", ref_tiddit=config["ref_tiddit"])
 	output:
 		"results/{sample}_tiddit.vcf"
 	container: 
@@ -56,16 +58,27 @@ rule svdb_merge:
 		tiddit_retro="results/{sample}_tiddit_retro.vcf",
 		jitter="results/{sample}_jitter.vcf"
 	output:
-		"{sample}.merged.vcf"
+		"results/{sample}.merged.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
-
 	shell:
 		"svdb --merge --vcf {input.retro} {input.tiddit_retro} {input.jitter} > {output}"
 
 
 #rule vep:
+	#input:
+		#"results/{sample}.merged.vcf"
+	#output:
+		#"results/{sample}.merged.vep.vcf"
+	#shell:
+		#"path/to/vep "
 
 #rule annotate:
+	#input:
+		#"results/{sample}.merged.vep.vcf"
+	#output:
+		#"results/{sample}.merged.vep.annotated.vcf"
+	#script:
+		#"scripts/run_annotate.py {input} {output}"
 
 
