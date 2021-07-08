@@ -8,7 +8,7 @@ rule all:
 
 rule retro:
 	input:
-		sample="{sample}.bam", 
+		bam=lambda wildcards: config["samples"][wildcards.sample], 
 		ref=expand("{ref_retro}", ref_retro=config["ref_retro"]),
 		ref_fasta=expand("{ref_fasta}", ref_fasta=config["ref_fasta"])
 	output:
@@ -17,29 +17,31 @@ rule retro:
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	script:
-		"bash run_retro.sh {input.sampleinput.sample} {output.discover} {input.ref} {output.discover} {input.ref_fasta} {output.call}"
+		"run_retro.sh {input.bam} {output.discover} {input.ref} {output.discover} {input.ref_fasta} {output.call}"
 
 rule jitter:
 	input:
-		sample="{sample}.bam", 
+		bam=lambda wildcards: config["samples"][wildcards.sample], 
 		ref=expand("{ref_jitter}", ref_jitter=config["ref_jitter"])
 	output:
 		"results/{sample}_jitter.vcf"
+	params: 
+		prefix=expand("{sample}", sample=config["samples"])
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
-		"python jitterbug.py {input.sample} {input.ref} -o {output}"
+		"python jitterbug.py {input.bam} {input.ref} -o {params.prefix}"
 
 rule tiddit:
 	input:
-		sample="{sample}.bam",
+		bam=lambda wildcards: config["samples"][wildcards.sample],
 		ref=expand("{ref_tiddit}", ref_tiddit=config["ref_tiddit"])
 	output:
 		"results/{sample}_tiddit.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
-		"python TIDDIT.py --sv --bam {input.sample} --ref {input.ref} -o {output}"
+		"python TIDDIT.py --sv --bam {input.bam} --ref {input.ref} -o {output}"
 
 rule mobileann:
 	input:
@@ -71,14 +73,18 @@ rule svdb_merge:
 	#output:
 		#"results/{sample}.merged.vep.vcf"
 	#shell:
-		#"path/to/vep "
+		#"{path}vep "
 
 #rule annotate:
 	#input:
 		#"results/{sample}.merged.vep.vcf"
 	#output:
 		#"results/{sample}.merged.vep.annotated.vcf"
+	#params: 
+		#prefix=expand("{sample}", sample=config["samples"])
 	#script:
-		#"scripts/run_annotate.py {input} {output}"
+		#"scripts/run_annotate.sh {input} {params.prefix}"
 
+
+#rule extract:
 
