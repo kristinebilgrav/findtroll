@@ -1,0 +1,120 @@
+#! /usr/bin/env python
+"""
+Execution script for snakemake workflow.
+"""
+import argparse
+import os.path
+import snakemake
+import sys
+import pprint
+import yaml
+import glob
+
+thisdir = os.path.abspath(os.path.dirname(__file__)) #finds current path
+
+def main(args):
+    # first, find the Snakefile
+    snakefile = os.path.join(thisdir + "/workflow/", 'Snakefile')
+    if not os.path.exists(snakefile):
+        sys.stderr.write('Error: cannot find Snakefile at {}\n'.format(snakefile))
+        sys.exit(-1)
+
+    # next, find the workflow config file
+    workflowfile = None
+    if os.path.exists(args.workflowfile) and not os.path.isdir(args.workflowfile):
+        workflowfile = args.workflowfile
+    else:
+        for suffix in ('', '.yaml'):
+            tryfile = os.path.join(thisdir, args.workflowfile + suffix)
+            if os.path.exists(tryfile) and not os.path.isdir(tryfile):
+                sys.stderr.write('Found workflowfile at {}\n'.format(tryfile))
+                workflowfile = tryfile
+                break
+
+    if not workflowfile:
+        sys.stderr.write('Error: cannot find workflowfile {}\n'.format(args.workflowfile))
+        sys.exit(-1)
+
+    # find samples    
+    if args.sample and args.folder:
+        sys.stderr.write('Error:cannot give both folder and single file')
+        sys.exit(-1)
+
+    if args.sample:
+        if not os.path.exists(args.sample):
+            sys.stderr.write('Error: cannot find samplefile')
+            sys.exit(-1)
+        if not args.sample.endswith(".bam"):
+            sys.stderr.write('Error: not a bam file') 
+            sys.exit(-1)
+        else:
+            sample = args.sample
+            name=args.sample.split("/")[-1].split(".")[0]
+            myfiles = {}
+            myfiles[name]=sample 
+            conffile = open(workflowfile, "r")
+            data=yaml.load(conffile)
+            data['samples']=myfiles
+            with open(workflowfile, "w") as yml:
+                yaml.dump(data, yml, default_flow_style=False)
+
+
+    if args.folder: 
+        if not os.path.isdir(args.folder):
+            sys.stderr.write('Error: cannot find folder')
+            sys.exit(-1)
+        files = glob.glob(os.path.join(args.folder, "*.bam"))
+        sample = files
+        myfiles = {}
+        conffile = open(workflowfile, "r")
+        data=yaml.load(conffile)
+        for fil in files:
+            name =fil.split("/")[-1].split(".")[0] 
+            myfiles[name]=fil
+            data['samples']=myfiles
+        with open(workflowfile, "w") as yml:
+            yaml.dump(data, yml, default_flow_style=False)
+
+
+    if not args.sample and not args.folder:
+        sys.stderr.write('Error: needs folder with samples or single input file')
+        sys.exit(-1)
+
+
+    with open(workflowfile, 'rt') as fp:
+        workflow_info = yaml.load(fp)
+
+    config = dict()
+    target=args.target
+
+    print('--------')
+    print('details!')
+    print('\tsnakefile: {}'.format(snakefile))
+    print('\tconfig: {}'.format(workflowfile))
+    print('\tsamples: {}'.format(sample))
+    print('\ttarget: {}'.format(target))
+    print('--------')
+
+    # run!!
+    status = snakemake.snakemake(snakefile,
+                                 targets=[target], printshellcmds=True,
+                                 dryrun=args.dry_run, config=config, usesingularity=args.use_singularity)
+
+    if status: # translate "success" into shell exit code of 0
+       return 0
+    return 1
+
+
+#prevents script to be run when its not the main program
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='run snakemake workflows', usage='''run <workflow> <parameters> [<target>] Run snakemake workflows, using the given workflow name & parameters file.
+''')
+    parser.add_argument('workflowfile')
+    parser.add_argument('--folder', type=str, help="input a folder with samples to run")
+    parser.add_argument('--sample', type=str, help="input a sample to run")
+    parser.add_argument('--use-singularity', action='store_true')
+    parser.add_argument('-n', '--dry-run', action='store_true')
+    parser.add_argument('--target', type=str,default="all", help="specify which rule(s) to run")
+    args = parser.parse_args()
+
+    sys.exit(main(args))
