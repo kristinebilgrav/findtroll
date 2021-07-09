@@ -4,3 +4,5 @@ ref_retro: reference/retro.tab
 ref_tiddit: reference/tiddit.tab
 samples:
   SweGen003: samples/SweGen003.bam
+
+vep_path: "module load bioinfo-tools vep |" #or path/to/vep
