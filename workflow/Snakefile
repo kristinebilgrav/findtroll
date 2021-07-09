@@ -4,7 +4,7 @@ configfile: "config/config.yaml"
 
 rule all: 
 	input:
-		expand("results/{sample}.merged.vcf", sample=config["samples"])
+		expand("results/{sample}.merged.vep.vcf", sample=config["samples"])
 
 rule retro:
 	input:
@@ -67,13 +67,13 @@ rule svdb_merge:
 		"svdb --merge --vcf {input.retro} {input.tiddit_retro} {input.jitter} > {output}"
 
 
-#rule vep:
-	#input:
-		#"results/{sample}.merged.vcf"
-	#output:
-		#"results/{sample}.merged.vep.vcf"
-	#shell:
-		#"{path}vep "
+rule vep:
+	input:
+		"results/{sample}.merged.vcf"
+	output:
+		"results/{sample}.merged.vep.vcf"
+	shell:
+		"{config[vep_path]} vep {input} {output}"
 
 #rule annotate:
 	#input:
