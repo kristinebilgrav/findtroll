@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 """
 Execution script for snakemake workflow.
+usage: run <workflowfile> <parameters> [<target>]
 """
 import argparse
 import os.path
@@ -98,7 +99,7 @@ def main(args):
     # run!!
     status = snakemake.snakemake(snakefile,
                                  targets=[target], printshellcmds=True,
-                                 dryrun=args.dry_run, config=config, usesingularity=args.use_singularity)
+                                 dryrun=args.dry_run, config=config) #usesingularity=args.use_singularit
 
     if status: # translate "success" into shell exit code of 0
        return 0

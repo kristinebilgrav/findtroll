@@ -73,7 +73,11 @@ rule vep:
 	output:
 		"results/{sample}.merged.vep.vcf"
 	shell:
-		"{config[vep_path]} vep {input} {output}"
+		"{config[vep_path]} vep --cache -i {input} -o {output} --vcf --assembly GRCh37 --per_gene"
+
+## sort before vep? bcftools sort $1 > /proj/nobackup/sens2017106/kristine/SVDB/$2/$2_merged_only_sorted.vcf
+
+#vep --cache --dir $VEP_CACHE --offline  -i /proj/nobackup/sens2017106/kristine/SVDB/$2/$2_merged_only_sorted.vcf  -o $2_merged_sorted_VEP.vcf  --vcf  --assembly GRCh37 --per_gene
 
 #rule annotate:
 	#input:

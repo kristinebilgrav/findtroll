@@ -1,8 +1,7 @@
-ref_fasta: reference/hg.fasta
-ref_jitter: reference/jitter.tab
-ref_retro: reference/retro.tab
-ref_tiddit: reference/tiddit.tab
+ref_fasta: resources/reference38/hg.fasta
+ref_jitter: resources/reference38/jitter.tab
+ref_retro: resources/reference38/retro.tab
+ref_tiddit: resources/reference38/tiddit.tab
 samples:
-  SweGen003: samples/SweGen003.bam
-
-vep_path: "module load bioinfo-tools vep |" #or path/to/vep
+  SweGen3333: samples/SweGen3333.bam
+vep_path: module load bioinfo-tools vep |
