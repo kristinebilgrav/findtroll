@@ -14,4 +14,8 @@ VEP
 Biomart
 Tablebrowser
 
-run with: 
+run with: positional arguments: workflowfile
+
+optional arguments: -h, --help show this help message and exit --folder FOLDER input a folder with samples to run --sample SAMPLE input a sample to run --use-singularity -n, --dry-run --target TARGET specify which rule(s) to run
+
+ex: python run config/config.yaml --folder samples
