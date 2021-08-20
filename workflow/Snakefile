@@ -1,37 +1,42 @@
-#snakemake -np --use-singularity 
-
+#Snakemake pipeline for discovery and annotation of TE in selected samples
 configfile: "config/config.yaml" 
 
 rule all: 
 	input:
 		expand("results/{sample}.merged.vep.vcf", sample=config["samples"])
-
+#run retroseq
 rule retro:
 	input:
 		bam=lambda wildcards: config["samples"][wildcards.sample], 
-		ref=expand("{ref_retro}", ref_retro=config["ref_retro"]),
+		ref_retro=expand("{ref_retro}", ref_retro=config["ref_retro"]),
 		ref_fasta=expand("{ref_fasta}", ref_fasta=config["ref_fasta"])
 	output:
 		discover="results/{sample}.output.vcf", 
 		call="results/{sample}.final.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
-	script:
-		"run_retro.sh {input.bam} {output.discover} {input.ref} {output.discover} {input.ref_fasta} {output.call}"
+	shell: #if change to script cannot recognice input?
+		#"run_retro.sh {input.bam} {output.discover} {input.ref_retro} {output.discover} {input.ref_fasta} {output.call}"
+		"--bind {input.bam} perl /bin/RetroSeq/bin/retroseq.pl -discover -bam {input.bam} -output {output.discover} -refTEs {input.ref_retro} | --bind {input.bam} perl /bin/RetroSeq/bin/retroseq.pl  -call -bam {input.bam} -input {output.discover} -ref {input.ref_fasta} -output {output.call} "
 
-rule jitter:
+#run jitterbug
+rule jitter: #chmod 777 problem
 	input:
 		bam=lambda wildcards: config["samples"][wildcards.sample], 
 		ref=expand("{ref_jitter}", ref_jitter=config["ref_jitter"])
+		libstats=expand("{libstats_jitter}", libstats=config["libstats_jitter"])
 	output:
 		"results/{sample}_jitter.vcf"
 	params: 
 		prefix=expand("{sample}", sample=config["samples"])
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
+	resources:
+		tmpdir="$TMPDIR" #not necessary, automatically uses system tmpdir
 	shell:
-		"python jitterbug.py {input.bam} {input.ref} -o {params.prefix}"
+		"--bind {resources} jitterbug.py {input.bam} {input.ref} --output_prefix {params.prefix} --minMAPQ 10 --conf_lib_stats {input.libstats}"
 
+#run tiddit
 rule tiddit:
 	input:
 		bam=lambda wildcards: config["samples"][wildcards.sample],
@@ -41,19 +46,31 @@ rule tiddit:
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
-		"python TIDDIT.py --sv --bam {input.bam} --ref {input.ref} -o {output}"
+		"--bind {input.bam} TIDDIT.py --sv --bam {input.bam} --ref {input.ref} -o {output}"
 
+#fix vcf (removing contigs and garbage)
+rule fixvcf: 
+	input:
+		"results/{sample}_tiddit.vcf"
+	output:
+		"results/{sample}_tiddit_fix.vcf"
+	script:
+		"scripts/fixvcf.py {input} {output}"
+
+#run mobileann to annotate tiddit
 rule mobileann:
 	input:
 		tiddit="results/{sample}_tiddit.vcf", 
-		retro="results/{sample}.final.vcf"
+		retro="results/{sample}.final.vcf",
+		ref_bed=expand("{ref_tiddit}", ref_tiddit=config["ref_tiddit"]) #same ref as tiddit bed file? 
 	output:
 		"results/{sample}_tiddit_retro.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
-		"python MobileAnn.py --sv_annotate --sv {input.tiddit} --db {input.retro} > {output}"
+		"MobileAnn.py --sv_annotate --sv {input.tiddit} --db {input.retro} --rm {input.ref_bed} > {output}"
 
+#merge all three callers with SVDB
 rule svdb_merge:
 	input:
 		retro="results/{sample}.final.vcf",
@@ -64,9 +81,22 @@ rule svdb_merge:
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
-		"svdb --merge --vcf {input.retro} {input.tiddit_retro} {input.jitter} > {output}"
+		"svdb --merge --vcf {input.retro} {input.tiddit_retro} {input.jitter} --bnd_distance 150 > {output}"
 
+#sort with bcftools
+rule sort:
+	input: 
+		'results/{sample}.merged.vcf'
+	output:
+		'results/{sample}.sorted.merged.vcf'
+	container:
+		"docker://kristinebilgrav/findtroll:latest"
+	shell:
+		'bcftools sort {input} {output}'
+		#part of samtools - work when only installed samtools?
+		
 
+#annotate with VEP
 rule vep:
 	input:
 		"results/{sample}.merged.vcf"
@@ -79,6 +109,7 @@ rule vep:
 
 #vep --cache --dir $VEP_CACHE --offline  -i /proj/nobackup/sens2017106/kristine/SVDB/$2/$2_merged_only_sorted.vcf  -o $2_merged_sorted_VEP.vcf  --vcf  --assembly GRCh37 --per_gene
 
+#annotate with tabix
 #rule annotate:
 	#input:
 		#"results/{sample}.merged.vep.vcf"
@@ -88,7 +119,8 @@ rule vep:
 		#prefix=expand("{sample}", sample=config["samples"])
 	#script:
 		#"scripts/run_annotate.sh {input} {params.prefix}"
+#change from sh to different file?
 
-
+#filtering results
 #rule extract:
 
