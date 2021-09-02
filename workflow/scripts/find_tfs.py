@@ -4,8 +4,8 @@ from os import path
 
 #loop through retrooutput, find positions, make interval, tabix if exists in bed file, if match add to new file with info from both files
 
-filename = sys.argv[2] + "_tfstmp.vcf" 
-fileOutput = open(sys.argv[2] + "_VEP_exons_tfs.vcf", "w")
+filename = sys.argv[3] + "_tfstmp.vcf" 
+fileOutput = open(sys.argv[3] + "_VEP_exons_tfs.vcf", "w")
 
 
 for l in open(sys.argv[1]):
@@ -22,8 +22,7 @@ for l in open(sys.argv[1]):
     interval_start  = position - 100
     interval_stop = position + 100
     search = ( chro + ":" + str(interval_start) + "-" + str(interval_stop))
-    #print("tabix /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/ENCODE/gz " + search + " " + ">" + " " + filename )
-    os.system("tabix /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/ENCODE/tfs37_nochr.bed.gz " + search + " " + ">" + " " + filename ) 
+    os.system("tabix  " + sys.argv[2] + " " + search + " " + ">" + " " + filename ) 
 
     info_tag=";TFs="
     tfs = []
@@ -39,3 +38,4 @@ for l in open(sys.argv[1]):
     fileOutput.write("\t".join(linesplit) + "\n")
 
 fileOutput.close()
+os.system('rm ' + filename)

@@ -4,8 +4,8 @@ from os import path
 
 #loop through retrooutput, find positions, make interval, tabix if exists in bed file, if match add to new file with info from both files
 
-fileOutput = open(sys.argv[2] + "_VEP_exons.vcf", "w")
-filename = sys.argv[2] + "_exonstmp.vcf" #change to exons, etcetc
+fileOutput = open(sys.argv[3] + "_VEP_exons.vcf", "w")
+filename = sys.argv[3] + "_exonstmp.vcf" 
 
 
 for l in open(sys.argv[1]):
@@ -25,7 +25,7 @@ for l in open(sys.argv[1]):
     interval_stop = position + 100
     search = ( chro + ":" + str(interval_start) + "-" + str(interval_stop))
     #print("tabix /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/ENCODE/hg37_exons_fix.bed.gz " + search + " " + ">" + " " + filename)
-    os.system("tabix /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/ENCODE/hg37_exons_fix.bed.gz " + search + " " + ">" + " " + filename) #change to sysargv
+    os.system("tabix " + sys.argv[2] + " " + search + " " + ">" + " " + filename) #change to sysargv
     
     gene_tag=";EXON_gene="
     type_tag = ";EXON_type="
@@ -50,4 +50,4 @@ for l in open(sys.argv[1]):
 
 
 fileOutput.close()
-
+os.system('rm ' + filename)

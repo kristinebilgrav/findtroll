@@ -1,9 +1,11 @@
 #Snakemake pipeline for discovery and annotation of TE in selected samples
+from snakemake.utils import min_version
 configfile: "config/config.yaml" 
+
 
 rule all: 
 	input:
-		expand("results/{sample}.merged.vep.vcf", sample=config["samples"])
+		expand("results/{sample}_VEP_exons_tfs_segdup_dnase.vcf", sample=config["samples"])
 #run retroseq
 rule retro:
 	input:
@@ -23,8 +25,8 @@ rule retro:
 rule jitter: #chmod 777 problem
 	input:
 		bam=lambda wildcards: config["samples"][wildcards.sample], 
-		ref=expand("{ref_jitter}", ref_jitter=config["ref_jitter"])
-		libstats=expand("{libstats_jitter}", libstats=config["libstats_jitter"])
+		ref=expand("{ref_jitter}", ref_jitter=config["ref_jitter"]),
+		libstats=expand("{libstats_jitter}", libstats_jitter=config["libstats_jitter"])
 	output:
 		"results/{sample}_jitter.vcf"
 	params: 
@@ -110,16 +112,8 @@ rule vep:
 #vep --cache --dir $VEP_CACHE --offline  -i /proj/nobackup/sens2017106/kristine/SVDB/$2/$2_merged_only_sorted.vcf  -o $2_merged_sorted_VEP.vcf  --vcf  --assembly GRCh37 --per_gene
 
 #annotate with tabix
-#rule annotate:
-	#input:
-		#"results/{sample}.merged.vep.vcf"
-	#output:
-		#"results/{sample}.merged.vep.annotated.vcf"
-	#params: 
-		#prefix=expand("{sample}", sample=config["samples"])
-	#script:
-		#"scripts/run_annotate.sh {input} {params.prefix}"
-#change from sh to different file?
+include: 'rules/annotate.smk'
+
 
 #filtering results
 #rule extract:
