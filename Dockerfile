@@ -39,5 +39,5 @@ RUN git clone https://github.com/elzbth/jitterbug.git
 RUN git clone https://github.com/kristinebilgrav/MobileAnn.git
 
 #SVDB
-RUN pip install SVDB
+RUN pip install SVDB #updated version
 
