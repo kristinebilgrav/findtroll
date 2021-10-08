@@ -1,7 +1,7 @@
 import os
 import sys
 import yaml
-#counts instance of a protein coding(?) feature in a ME and performs binomial test
+#counts instance of a fewature in TE affecting protein coding pos in ONE individual
 
 features = ['EXON_gene=','TFs=', 'SegDup=', 'DNase=']
 featurecount = {'EXON_gene=':{},'TFs=':{}, 'SegDup=':{}, 'DNase=':{}}
@@ -22,6 +22,12 @@ for line in open(sys.argv[1]):
                 if MEtype not in featurecount[f][g]:
                     featurecount[f][g][MEtype] = 0
                 featurecount[f][g][MEtype] += 1
+
+total_exons = 0
+for k in featurecount[EXON_gene][ALU]:
+    total_exons += int(k)
+
+#repeat for all TEs
 
 name = sys.argv[1].split('.')[0].split('_')[0]
 with open(name + 'stats.yaml', 'w') as file:

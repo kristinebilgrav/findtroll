@@ -7,103 +7,11 @@ rule all:
 	input:
 		expand("results/{sample}_VEP_exons_tfs_segdup_dnase.vcf", sample=config["samples"])
 
-#run retroseq
-rule retro:
-	input:
-		bam=lambda wildcards: config["samples"][wildcards.sample], 
-		ref_ME_tab=expand("{ref_ME_tab}", ref_ME_tab=config["ref_ME_tab"]),
-		ref_fasta=expand("{ref_fasta}", ref_fasta=config["ref_fasta"])
-	output:
-		discover="results/{sample}.output.vcf", 
-		call="results/{sample}.final.vcf"
-	container: 
-		"docker://kristinebilgrav/findtroll:latest"
-	shell: 
-		"perl RetroSeq/bin/retroseq.pl -discover -bam {input.bam} -output {output.discover} -refTEs {input.ref_ME_tab} | perl /bin/RetroSeq/bin/retroseq.pl  -call -bam {input.bam} -input {output.discover} -ref {input.ref_fasta} -output {output.call} "
+#Call variants
+include: 'rules/callers.smk'
 
-
-#run jitterbug
-rule jitter: #chmod 777 problem
-	input:
-		bam=lambda wildcards: config["samples"][wildcards.sample], 
-		ref_ME_gff3=expand("{ref_ME_gff3}", ref_ME_gff3=config["ref_ME_gff3"]),
-		libstats=expand("{libstats_jitter}", libstats_jitter=config["libstats_jitter"])
-	output:
-		"results/{sample}_jitter.gff3"
-	params: 
-		prefix=expand("{sample}", sample=config["samples"])
-	container: 
-		"docker://kristinebilgrav/findtroll:latest"
-	resources:
-		tmpdir="$TMPDIR" #not necessary, automatically uses system tmpdir
-	shell:
-		"jitterbug/jitterbug.py {input.bam} {input.ref_ME_gff3} --output_prefix {params.prefix} --minMAPQ 10 --conf_lib_stats {input.libstats}"
-
-
-rule gff_to_vcf:
-	input:
-		"results/{sample}_jitter.gff3"
-	output:
-		"results/{sample}_jitter.vcf"
-	shell:
-		"script/gff.py {input} {output}"
-
-rule delly: 
-	input:
-		bam=lambda wildcards: config["samples"][wildcards.sample],
-		ref_fasta=expand("{ref_fasta}", ref_fasta=config["ref_fasta"])
-	output:
-		"results/{sample}_delly.bcf"
-	container:
-		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		"delly call -o {output} -g {input.ref_fasta} {input.bam}"
-
-
-rule bcf_to_vcf:
-	input:
-		"results/{sample}_delly.bcf"
-	output:
-		"results/{sample}_delly.vcf"
-	container:
-		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		"bcftools view {input} > {output}"
-
-#remove problemcausing things
-rule fix_vcf:
-	input:
-		"results/{sample}_delly.vcf"
-	output:
-		"results/{sample}_delly_fix.vcf"
-	script:
-		"scripts/fixvcf.py {input} {output}"
-
-#run mobileann to annotate delly
-rule mobileann_retro:
-	input:
-		delly="results/{sample}_delly.vcf", 
-		retro="results/{sample}.final.vcf",
-		ref_ME_bed=expand("{ref_ME_bed}", ref_ME_bed=config["ref_ME_bed"])
-	output:
-		"results/{sample}_delly_retro.vcf"
-	container: 
-		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		"MobileAnn/MobileAnn.py --sv_annotate --sv {input.delly} --db {input.retro} --rm {input.ref_ME_bed} -d 300 > {output}"
-
-rule mobileann_jitter:
-	input:
-		delly="results/{sample}_delly.vcf", 
-		jitter="results/{sample}_jitter.vcf",
-		ref_ME_bed=expand("{ref_ME_bed}", ref_ME_bed=config["ref_ME_bed"]) #same ref as tiddit bed file? 
-	output:
-		"results/{sample}_delly_jitter.vcf"
-	container: 
-		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		"python MobileAnn/MobileAnn.py --sv_annotate --sv {input.delly} --db {input.jitter} --rm {input.ref_ME_bed} -d 300 > {output}"
-
+#convert and fix vcf files
+include: 'rules/orgvcfs.smk'
 
 #merge all three callers with SVDB
 rule svdb_merge:
@@ -113,7 +21,7 @@ rule svdb_merge:
 		delly_jitter="results/{sample}_delly_jitter.vcf",
 		jitter="results/{sample}_jitter.vcf"
 	output:
-		"results/{sample}.merged.vcf"
+		"results/{sample}_merged.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
@@ -137,5 +45,10 @@ include: 'rules/annotate.smk'
 
 
 #filtering results
-#rule extract:
 
+
+#rule filter:
+	#filter away all that are not TEs
+
+
+#rule extract:

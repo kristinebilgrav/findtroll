@@ -2,19 +2,19 @@
 
 rule vep:
         input:
-                "results/{sample}.merged.vcf"
+                "results/{sample}_merged.vcf"
         output:
-                "results/{sample}.merged.vep.vcf"
+                "results/{sample}_merged_vep.vcf"
         shell:
                 "{config[vep_path]} vep --cache -i {input} -o {output} --vcf --assembly {config[vep_assembly]} --per_gene"
 
 
 rule exons:
 	input:
-		file = 'results/{sample}.merged.vep.vcf',
+		file = 'results/{sample}_merged_vep.vcf',
 		exons=expand("{exons}", exons=config["exons"])
 	output:
-		'results/{sample}_vep_exons.vcf'
+		'results/{sample}_vep_exons.vcf' #wildcards -- script legger til navn - fix
 	script:
 		"scripts/find_exons.py {input.file} {input.exons} {output}"
 
