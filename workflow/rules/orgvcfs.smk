@@ -29,7 +29,7 @@ rule fix_vcf:
 	output:
 		"results/{sample}_delly_fix.vcf"
 	script:
-		"scripts/fixvcf.py {input} {output}"
+		"scripts/filter.py {input} {output}"
 
 #annotate delly wil retro
 rule mobileann_retro:
@@ -41,7 +41,7 @@ rule mobileann_retro:
 		"results/{sample}_delly_retro.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
-	shell:
+	script:
 		"MobileAnn/MobileAnn.py --sv_annotate --sv {input.delly} --db {input.retro} --rm {input.ref_ME_bed} -d 300 > {output}"
 
 
@@ -55,6 +55,6 @@ rule mobileann_jitter:
 		"results/{sample}_delly_jitter.vcf"
 	container: 
 		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		"python MobileAnn/MobileAnn.py --sv_annotate --sv {input.delly} --db {input.jitter} --rm {input.ref_ME_bed} -d 300 > {output}"
+	script:
+		"MobileAnn/MobileAnn.py --sv_annotate --sv {input.delly} --db {input.jitter} --rm {input.ref_ME_bed} -d 300 > {output}"
 

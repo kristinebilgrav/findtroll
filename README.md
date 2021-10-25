@@ -30,4 +30,5 @@ ex: python run config/config.yaml --folder samples
 
 configure:
 reference genome & reference files
-vep path and assembly version
+vep path, assembly version, custom fields, dir
+db path

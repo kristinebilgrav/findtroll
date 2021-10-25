@@ -1,13 +1,12 @@
-libstats_jitter: resources/libstats_jitter.tab
-ref_fasta: resources/reference38/hg.fasta
-ref_jitter: resources/reference38/jitter.tab
-ref_retro: resources/reference38/retro.tab
-ref_tiddit: resources/reference38/tiddit.tab
+ME_db: path/to/db
+libstats_jitter: <libstats/jitter>
+ref_ME_bed: <>
+ref_ME_gff3: <gff/MEs/ingenome>
+ref_ME_tab: <path/to/tabfile/wpaths/toMEbedfiles>
+ref_fasta: <path/to/ref/fastafile>
 samples:
   SweGen3333: samples/SweGen3333.bam
+vep_assembly: GRCh38
+vep_basedir: $VEP_CACHE
+vep_custom: <path/to/file,short_name,file_type,annotation_type,report_coordinates,vcf_fields>
 vep_path: module load bioinfo-tools vep |
-exons: resources/annotation38/hg38_exons_chr.bed.gz
-tfs:resources/annotation38/hg38_tfs.bed.gz
-segdups: resources/annotation38/SegDups_hg38.bed.gz
-dnase: resources/annotation38/DNaseClusters_hg38.bed.gz
-

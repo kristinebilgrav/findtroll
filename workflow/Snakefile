@@ -1,11 +1,11 @@
 #Snakemake pipeline for discovery and annotation of TE in selected samples
 from snakemake.utils import min_version
-configfile: "config/config.yaml" 
+configfile: "config/config.yaml"
 
 
-rule all: 
+rule all:
 	input:
-		expand("results/{sample}_VEP_exons_tfs_segdup_dnase.vcf", sample=config["samples"])
+		expand("results/{sample}.annotated.vcf", sample=config["samples"])
 
 #Call variants
 include: 'rules/callers.smk'
@@ -21,34 +21,16 @@ rule svdb_merge:
 		delly_jitter="results/{sample}_delly_jitter.vcf",
 		jitter="results/{sample}_jitter.vcf"
 	output:
-		"results/{sample}_merged.vcf"
-	container: 
+		"results/{sample}.merged.vcf"
+	container:
 		"docker://kristinebilgrav/findtroll:latest"
 	shell:
 		"svdb --merge --vcf {input.retro} {input.delly_retro} {input.delly_jitter} {input.jitter} --bnd_distance 150 > {output}"
 
-#sort with bcftools
-rule sort:
-	input: 
-		'results/{sample}.merged.vcf'
-	output:
-		'results/{sample}.sorted.merged.vcf'
-	container:
-		"docker://kristinebilgrav/findtroll:latest"
-	shell:
-		'bcftools sort {input} {output}'
 
-		
+#filtering common variants
+include: 'rules/dbfilter.smk'
 
-#annotate with vep and tabix
+#annotate with vep (and tabix)
 include: 'rules/annotate.smk'
 
-
-#filtering results
-
-
-#rule filter:
-	#filter away all that are not TEs
-
-
-#rule extract:
