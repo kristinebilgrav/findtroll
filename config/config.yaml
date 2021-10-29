@@ -1,12 +1,16 @@
-ME_db: path/to/db
-libstats_jitter: <libstats/jitter>
-ref_ME_bed: <>
-ref_ME_gff3: <gff/MEs/ingenome>
-ref_ME_tab: <path/to/tabfile/wpaths/toMEbedfiles>
-ref_fasta: <path/to/ref/fastafile>
+ALU_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_ALU.db
+HERV_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_HERV.db
+L1_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_L1.db
+PWD: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/findtroll/
+SVA_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_SVA.db
+libstats_jitter: /proj/nobackup/sens2017106/kristine/Jitterbug/HG38/SweGen_config.tab
+ref_ME_bed: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/grch38_r/human_assembly38_ME.bed
+ref_ME_gff3: /proj/nobackup/sens2017106/kristine/Jitterbug/HG38/human_v38_ME_ann.gff3
+ref_ME_tab: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/grch38_r/repeat_elemen_38.tab
+ref_fasta: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/Homo_sapiens_assembly38.fasta
 samples:
-  SweGen3333: samples/SweGen3333.bam
+  SweGen0040T: SweGen0040T.bam
 vep_assembly: GRCh38
 vep_basedir: $VEP_CACHE
-vep_custom: <path/to/file,short_name,file_type,annotation_type,report_coordinates,vcf_fields>
+vep_custom: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/grch38_r/SVA_38_sorted.bed.gz,SVA,bed,overlap,0
 vep_path: module load bioinfo-tools vep |

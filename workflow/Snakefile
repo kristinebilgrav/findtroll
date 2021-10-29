@@ -1,11 +1,15 @@
 #Snakemake pipeline for discovery and annotation of TE in selected samples
 from snakemake.utils import min_version
+
 configfile: "config/config.yaml"
 
 
 rule all:
 	input:
-		expand("results/{sample}.annotated.vcf", sample=config["samples"])
+		expand("{PWD}results/{sample}_L1_annotated.vcf", sample=config["samples"], PWD=config["PWD"]),
+		expand("{PWD}results/{sample}_ALU_annotated.vcf", sample=config["samples"],PWD=config["PWD"] ),
+		expand("{PWD}results/{sample}_SVA_annotated.vcf", sample=config["samples"], PWD=config["PWD"]),
+		expand("{PWD}results/{sample}_HERV_annotated.vcf", sample=config["samples"], PWD=config["PWD"])
 
 #Call variants
 include: 'rules/callers.smk'
@@ -16,14 +20,14 @@ include: 'rules/orgvcfs.smk'
 #merge all three callers with SVDB
 rule svdb_merge:
 	input:
-		retro="results/{sample}.final.vcf",
-		delly_retro="results/{sample}_delly_retro.vcf",
-		delly_jitter="results/{sample}_delly_jitter.vcf",
-		jitter="results/{sample}_jitter.vcf"
+		retro="{PWD}results/{sample}_final.vcf",
+		delly_retro="{PWD}results/{sample}_delly_retro.vcf",
+		delly_jitter="{PWD}results/{sample}_delly_jitter.vcf",
+		jitter="{PWD}results/{sample}_jitter.vcf"
 	output:
-		"results/{sample}.merged.vcf"
+		"{PWD}results/{sample}_merged.vcf"
 	container:
-		"docker://kristinebilgrav/findtroll:latest"
+		"findtroll.sif"
 	shell:
 		"svdb --merge --vcf {input.retro} {input.delly_retro} {input.delly_jitter} {input.jitter} --bnd_distance 150 > {output}"
 
