@@ -20,16 +20,17 @@ include: 'rules/orgvcfs.smk'
 #merge all three callers with SVDB
 rule svdb_merge:
 	input:
-		retro="{PWD}results/{sample}_final.vcf",
-		delly_retro="{PWD}results/{sample}_delly_retro.vcf",
-		delly_jitter="{PWD}results/{sample}_delly_jitter.vcf",
-		jitter="{PWD}results/{sample}_jitter.vcf"
+		retro=expand("{PWD}results/{sample}_final.vcf", sample=config["samples"], PWD=config["PWD"]),
+		delly_retro="{PWD}results/{sample}_delly_retro.vcf"
+		#delly_jitter="{PWD}results/{sample}_delly_jitter.vcf",
+		#jitter="{PWD}results/{sample}_jitter.vcf"
 	output:
 		"{PWD}results/{sample}_merged.vcf"
 	container:
 		"findtroll.sif"
 	shell:
-		"svdb --merge --vcf {input.retro} {input.delly_retro} {input.delly_jitter} {input.jitter} --bnd_distance 150 > {output}"
+		"singularity exec findtroll.sif svdb --merge --vcf {input.retro} {input.delly_retro}  --bnd_distance 150 > {output}"
+		#"svdb --merge --vcf {input.retro} {input.delly_retro} {input.delly_jitter} {input.jitter} --bnd_distance 150 > {output}"
 
 
 #filtering common variants

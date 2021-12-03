@@ -1,10 +1,10 @@
 import sys
 
-file= open(sys.argv[2], 'w')
+file= open(snakemake.output[0], 'w')
 deletelist= ['random', 'HLA', 'decoy', 'chrUn', 'alt']
 
 FLs = {}
-for line in open(sys.argv[1]):
+for line in open(snakemake.input[0]):
         if line.startswith('#'):
                 save = True
                 for d in deletelist:
@@ -15,6 +15,8 @@ for line in open(sys.argv[1]):
 
         if 'INS:ME' in line:
                 origin= line.split(';set=')[-1].split(';')[0].split('-')
-                if len(origin) > 1:
+                #if len(origin) > 1:
 
-                        file.write(line)
+                        #file.write(line)
+
+                file.write(line)

@@ -28,7 +28,9 @@ optional arguments:
 ex: python run config/config.yaml --folder samples
 
 
-configure:
+configure yourself:
 reference genome & reference files
-vep path, assembly version, custom fields, dir
-db path
+vep path, assembly version, custom fields, direxctory
+MobileAnn path
+vcf db path (svdb query)
+bai index need to be in same dir as sample

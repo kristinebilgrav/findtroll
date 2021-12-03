@@ -3,11 +3,11 @@
 #SBATCH -p core
 #SBATCH -n 3
 #SBATCH -t 7-00:00:00
-#SBATCH -J TROLL_RUN
+#SBATCH -J TROLLJAKT
 
 source /home/kbilgrav/anaconda3/bin/activate
 
-module load bioinfo-tools python3 snakemake samtools
+module load bioinfo-tools python3 snakemake samtools vep
 
 #convert cram to bam
 #cp $1 $TMPDIR/$2.cram
@@ -16,5 +16,5 @@ module load bioinfo-tools python3 snakemake samtools
 #cp $TMPDIR/$2.bam /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/findtroll
 
 
-python3 run config/config.yaml --sample $PWD/$1.bam --use-singularity
+python3 run config/config.yaml --sample $1 --use-singularity
 

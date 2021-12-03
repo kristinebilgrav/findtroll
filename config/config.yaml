@@ -1,8 +1,9 @@
-ALU_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_ALU.db
-HERV_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_HERV.db
-L1_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_L1.db
+ALU_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_ALU_export.vcf
+HERV_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_HERV_export.vcf
+L1_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_L1_export.vcf
+MA_path: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/tiddit/MobileAnn/
 PWD: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/findtroll/
-SVA_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_SVA.db
+SVA_db: /proj/nobackup/sens2017106/kristine/SVDB/SweGen38_SVA_export.vcf
 libstats_jitter: /proj/nobackup/sens2017106/kristine/Jitterbug/HG38/SweGen_config.tab
 ref_ME_bed: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/grch38_r/human_assembly38_ME.bed
 ref_ME_gff3: /proj/nobackup/sens2017106/kristine/Jitterbug/HG38/human_v38_ME_ann.gff3
@@ -10,6 +11,7 @@ ref_ME_tab: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repea
 ref_fasta: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/Homo_sapiens_assembly38.fasta
 samples:
   SweGen0040T: SweGen0040T.bam
+tabix_path: module load bioinfo-tools tabix |
 vep_assembly: GRCh38
 vep_basedir: $VEP_CACHE
 vep_custom: /proj/nobackup/sens2017106/wharf/kbilgrav/kbilgrav-sens2017106/Repeatmasker/grch38_r/SVA_38_sorted.bed.gz,SVA,bed,overlap,0
